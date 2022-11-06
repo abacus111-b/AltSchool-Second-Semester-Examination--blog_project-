@@ -11,6 +11,13 @@ module.exports = (error, req, res, next) => {
       error: 'invalid token',
     });
   }
+  if (error.source === 'creating a story') {
+    return res.status(400).json({
+      status: 'fail',
+      error: 'Please provide valid details',
+      additionalInfo: error,
+    });
+  }
 
   res.status(400).json({
     error: error.message,

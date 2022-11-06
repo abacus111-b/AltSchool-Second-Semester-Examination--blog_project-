@@ -9,6 +9,7 @@ const app = express();
 
 // connect to database
 connectToDb(process.env.DB_URI);
+// require('./misc/insertMany')();
 
 // use body parser middleware
 app.use(express.json());

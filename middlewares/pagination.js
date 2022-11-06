@@ -12,16 +12,9 @@ module.exports = async (req, res, next) => {
     if (!isNaN(sizeFromQuery) && sizeFromQuery > 0 && sizeFromQuery < 21)
       size = sizeFromQuery;
 
-    let numberOfResults;
-    if (req.url.split('?')[0] === '/') {
-      numberOfResults = await Story.find({ state: 'published' })
-        .countDocuments()
-        .exec();
-    } else if (req.url.split('?')[0].length === 25) {
-      numberOfResults = await Story.find({ state: 'published' })
-        .countDocuments()
-        .exec();
-    }
+    const numberOfResults = await Story.find(req.findFilter)
+      .countDocuments()
+      .exec();
 
     const totalPages = Math.ceil(numberOfResults / size);
     if (
@@ -52,6 +45,13 @@ module.exports = async (req, res, next) => {
     req.pagination.start = (page - 1) * size;
     req.pagination.end = page * size;
     req.pagination.numberOfResults = numberOfResults;
+
+    req.pageInfo = { results: numberOfResults, totalPages };
+    if (req.pagination.previousPage)
+      req.pageInfo.previousPage = req.pagination.previousPage;
+    req.pageInfo.currentPage = req.pagination.page;
+    if (req.pagination.nextPage)
+      req.pageInfo.nextPage = req.pagination.nextPage;
 
     next();
   } catch (err) {

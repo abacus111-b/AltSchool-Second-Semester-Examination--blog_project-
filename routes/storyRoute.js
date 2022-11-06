@@ -1,20 +1,40 @@
 const router = require('express').Router();
 const storyController = require('../controllers/storyController');
-const getBearerToken = require('../middlewares/getBearerToken');
-const getUserToken = require('../middlewares/getUserToken');
+const appDesigns = require('../middlewares/appDesigns');
+const verifyUser = require('../middlewares/getUserToken');
 const pagination = require('../middlewares/pagination');
+const creator = require('../middlewares/creator');
 
-router.route('/').get(pagination, storyController.getStories);
+router
+  .route('/')
+  .get(
+    appDesigns.filterAndSort,
+    appDesigns.filterByPublished,
+    pagination,
+    appDesigns.list,
+    storyController.getStories
+  );
+
 router.route('/:id').get(storyController.getStory);
 
-router.use(getBearerToken, getUserToken);
-router.route('/create').post(storyController.createStory);
+router
+  .route('/p')
+  .get(
+    verifyUser.getUserFromToken,
+    appDesigns.filterAndSort,
+    appDesigns.setUserFilter,
+    pagination,
+    storyController.getStories
+  );
 
-// router.use(getBearerToken, getUserToken);
-// router.post('/create', storyController.createStory);
-// router.get('/:id', storyController.getStory);
-// router.get('/', storyController.getStories);
+router
+  .route('/:id')
+  .get(verifyUser.attachUser, storyController.getStory)
+  .patch(verifyUser.getUserFromToken, creator, storyController.updateStoryState)
+  .put(verifyUser.getUserFromToken, creator, storyController.editStory);
 
-// router.route('/');
+router
+  .route('/create')
+  .post(verifyUser.getUserFromToken, storyController.createStory);
 
 module.exports = router;
